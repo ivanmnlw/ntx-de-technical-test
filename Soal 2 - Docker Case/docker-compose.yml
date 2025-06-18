@@ -1,2 +1,29 @@
-version: "3"
+version: "3.9"
+
+# Membuat 2 container yaitu api dan etl
 services:
+  api:
+    # Membuat docker image api
+    build: 
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: api
+    ports:
+      - 6000:6000
+    # Untuk memastikan bahwa container api sudah siap digunakan
+    healthcheck:
+      test: ["CMD", "curl", "-X", "POST", "-f", "http://localhost:6000/predict?text=ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  etl:
+    # Membuat docker image api
+    build:
+      context: ./etl
+      dockerfile: Dockerfile
+    container_name: etl
+    # Container ini akan berjalan setelah api services sudah di check healthy
+    depends_on :
+      api:
+        condition: service_healthy
